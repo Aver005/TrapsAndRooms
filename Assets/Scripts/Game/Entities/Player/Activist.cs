@@ -9,13 +9,17 @@ public class Activist : MonoBehaviour
     /*
         Serialize Fields
     */
-    [SerializeField] private KeyCode interactKey = KeyCode.E;
+    /// <summary>
+    /// TODO: Оптимизировать проверку нажатия и столкновения
+    /// </summary>
+    //[SerializeField] private KeyCode interactKey = KeyCode.E;
 
     /*
         Private Fields
     */
     private Player player;
     private List<Item> itemsOnGround = new List<Item>();
+    private bool clicked = false;
 
     /*
         Public Fields
@@ -24,27 +28,34 @@ public class Activist : MonoBehaviour
     /*
         Properties
     */
+    public bool IsClicked
+    {
+        get { return clicked; }
+        set { clicked = value; }
+    }
 
     /*
         Public methods
     */
+    public bool IsItemOnGround(Item item)
+    {
+        return itemsOnGround.Contains(item);
+    }
 
     /*
         Private methods
     */
     private void CheckInteract()
     {
-        if (!Input.GetKeyUp(interactKey)) { return; }
-
         if (itemsOnGround.Count > 0)
         {
             Item item = itemsOnGround[0];
             bool pickedUp = player.PickUp(item);
 
-            if (pickedUp) 
+            if (pickedUp)
             {
-                Destroy(item.gameObject);
                 itemsOnGround.Remove(item);
+                Room.Instance.RemoveItem(item);
             }
         }
 
@@ -64,7 +75,13 @@ public class Activist : MonoBehaviour
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (collision.collider == null) { return; }
-        if (!Item.Is(collision.gameObject)) { return; }
+        if (!Item.Is(collision.gameObject)) 
+        {
+            if (collision.gameObject.GetComponent<Door>() == null) { return; }
+            collision.gameObject.GetComponent<Door>().Use();
+            return;
+        }
+
         Item item = collision.gameObject.GetComponent<Item>();
         if (itemsOnGround.Contains(item)) { return; }
         itemsOnGround.Add(item);

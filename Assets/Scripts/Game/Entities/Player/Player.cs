@@ -13,6 +13,7 @@ public class Player : LivingEnity
     /*
         Private Fields
     */
+    private Movement movement;
 
     /*
         Public Fields
@@ -60,6 +61,12 @@ public class Player : LivingEnity
         }
     }
 
+    public Vector3 NextPosition
+    {
+        get { return movement.NextPosition; }
+        set { movement.NextPosition = value; }
+    }
+
     /*
         Public methods
     */
@@ -90,14 +97,10 @@ public class Player : LivingEnity
     */
     private void Start()
     {
+        movement = GetComponent<Movement>();
         Invoke("ChangeHunger", Random.Range(0.01f, 2f));
         Invoke("ChangeThirst", Random.Range(0.01f, 2f));
         Invoke("ChangeFright", Random.Range(0.01f, 2f));
-    }
-
-    private void Update()
-    {
-        
     }
 
     /*

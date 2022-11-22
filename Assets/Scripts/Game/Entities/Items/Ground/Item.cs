@@ -39,6 +39,19 @@ public class Item : Entity
     /*
         Public methods
     */
+    public Item Create(Vector3 position)
+    {
+        if (itemsParent == null)
+        {
+            itemsParent = GameObject.Find("Items");
+            if (itemsParent == null) { itemsParent = new GameObject(); }
+        }
+
+        GameObject obj = Instantiate(gameObject, position, gameObject.transform.rotation, itemsParent.transform);
+        obj.name = Name + "-" + count;
+        obj.transform.SetPositionZ(itemsParent.transform.position.z);
+        return obj.GetComponent<Item>();
+    }
 
     /*
         Private methods
@@ -56,6 +69,7 @@ public class Item : Entity
     /*
         Static private fields
     */
+    private static GameObject itemsParent;
     private static Dictionary<int, Item> itemByID = new Dictionary<int, Item>();
 
     /*

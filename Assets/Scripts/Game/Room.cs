@@ -12,6 +12,7 @@ public class Room : MonoBehaviour
     [SerializeField] private int sizeHeight = 10;
     [SerializeField] private List<Block> blockPrefabsList = new List<Block>();
     [SerializeField] private List<Block> floorPrefabsList = new List<Block>();
+    [SerializeField] private List<Item> itemsPrefabsList = new List<Item>();
     [SerializeField] private Player player = null;
     [SerializeField] private Door doorPrefab;
 
@@ -51,6 +52,26 @@ public class Room : MonoBehaviour
     /*
         Public methods
     */
+    public void RespawnItems()
+    {
+        foreach(Item item in items) 
+        {
+            if (item == null) { continue; }
+            Destroy(item.gameObject); 
+        }
+
+        items.Clear();
+
+        for (int i = 0; i < Random.Range(0, 5); i++)
+        {
+            int index = Random.Range(0, itemsPrefabsList.Count);
+            Item item = itemsPrefabsList[index];
+            Vector3 pos = new Vector3(Random.Range(-4f, 4f), Random.Range(-4f, 4f));
+            Item newItem = item.Create(pos);
+            newItem.Count = Random.Range(1, item.MaxStackSize);
+            items.Add(newItem);
+        }
+    }
     public void RespawnDoor()
     {
         // Door creation
@@ -123,6 +144,7 @@ public class Room : MonoBehaviour
         }
 
         RespawnDoor();
+        RespawnItems();
     }
 
     public void Regenerate()
@@ -131,6 +153,7 @@ public class Room : MonoBehaviour
         int index = Random.Range(0, blockPrefabsList.Count);
         blockPrefabsList[index].Create(door.Location, door.Rotation);
         RespawnDoor();
+        RespawnItems();
 
         Vector3 offset = new Vector3();
         if (door.Facing.Equals(BlockFacing.WEST)) {offset = new Vector3(-1.25f, 0, 0);}
@@ -141,12 +164,20 @@ public class Room : MonoBehaviour
         player.transform.SetPositionZ((int) BlockLayer.OBJECT);
         player.Rotation = door.Rotation;
         player.GetComponent<Movement>().Invoke("SwitchMove", 0.2f);
+        player.NextPosition = player.transform.position;
 
         door.SwitchFreeze();
         door.Invoke("SwitchFreeze", 1f);
 
         roomIndex++;
         roomChangedEvent(roomIndex);
+    }
+
+    public void RemoveItem(Item item)
+    {
+        if (!items.Contains(item)) { return; }
+        items.Remove(item);
+        Destroy(item.gameObject);
     }
 
     /*
